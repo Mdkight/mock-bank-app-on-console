@@ -14,6 +14,11 @@ public interface UserDataInterface {
 	 
 	 ResultSet getAllUsernames();
 	
+	 ResultSet getTransactions();
+	 
+	 ResultSet getAccounts(int userId);
+
+	ResultSet getAccounts(boolean status);
 	
 
 }

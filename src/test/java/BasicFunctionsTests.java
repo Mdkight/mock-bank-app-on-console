@@ -1,8 +1,12 @@
+import java.util.Scanner;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import com.revature.main.BasicFunctions;
 import com.revature.objects.User;
 import com.revature.utils.UserDataPostgres;
 
@@ -10,6 +14,7 @@ import com.revature.utils.UserDataPostgres;
 public class BasicFunctionsTests {
 	UserDataPostgres userPost;
 	User user;
+	static Scanner scan = new Scanner(System.in);
 	
 	@Test
 	@BeforeEach
@@ -19,8 +24,11 @@ public class BasicFunctionsTests {
 	}
 
 	@Test
-	public void checkPasswordTest() {
-		//TODO create password test
+	public void getIntInputTest() {
+		int result=BasicFunctions.getIntInput();
+		System.out.println("enter the same number");
+		int compare=scan.nextInt();
+		Assertions.assertEquals(result,compare);
 	}
 	
 	

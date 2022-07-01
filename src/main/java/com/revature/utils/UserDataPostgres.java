@@ -2,6 +2,7 @@ package com.revature.utils;
 
 import java.sql.*;
 
+import com.revature.menus.Menu;
 import com.revature.objects.User;
 
 public class UserDataPostgres implements UserDataInterface {
@@ -75,5 +76,74 @@ public class UserDataPostgres implements UserDataInterface {
 		
 		return rs;
 	}
+
+	@Override
+	public ResultSet getTransactions() {
+		ResultSet transactions =null;
+		try {
+		conn = ConnectionUtils.getInstance().getConnection();
+		PreparedStatement getAllTransactions = conn.prepareStatement("select * from transactions");
+		transactions = getAllTransactions.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return transactions;
+	}
+	
+	public ResultSet getTransactions(int userId) {
+		ResultSet transactions =null;
+		try {
+		conn = ConnectionUtils.getInstance().getConnection();
+		PreparedStatement getTransactions = conn.prepareStatement("select * from transactions where user_id=?");
+		getTransactions.setInt(1, userId);
+		transactions = getTransactions.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return transactions;
+	}
+
+	@Override
+	public ResultSet getAccounts(int userId) {
+		ResultSet accounts =null;
+		try {
+		conn = ConnectionUtils.getInstance().getConnection();
+		PreparedStatement getAllAccounts = conn.prepareStatement("select * from accounts where user_id=?");
+		getAllAccounts.setInt(1, userId);
+		accounts = getAllAccounts.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return accounts;
+	}
+	
+	@Override
+	public ResultSet getAccounts(boolean status) {
+		ResultSet accounts =null;
+		try {
+		conn = ConnectionUtils.getInstance().getConnection();
+		PreparedStatement getPendingAccounts = conn.prepareStatement("select * from accounts where pending=?");
+		getPendingAccounts.setBoolean(1, status);
+		accounts = getPendingAccounts.executeQuery();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return accounts;
+	}
+	
+	public void display(ResultSet res) {
+		try {
+			while(res.next()) {
+				System.out.println(res);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 
 }

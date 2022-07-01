@@ -2,6 +2,9 @@ package com.revature.main;
 
 import java.util.Scanner;
 
+import com.revature.menus.CustomerMenu;
+import com.revature.menus.EmployeeMenu;
+import com.revature.menus.Menu;
 import com.revature.objects.User;
 
 /*## Requirements
@@ -15,13 +18,13 @@ import com.revature.objects.User;
 ## User Stories
 
 * As a user, I can login.
-* * As a user, I can register for a customer account.
+* As a user, I can register for a customer account.
 * 
 * * As the system, I reject invalid transactions.
     * Ex:
         * A withdrawal that would result in a negative balance.
         * A deposit or withdrawal of negative money.
-        * 
+* 
 * As a customer, I can apply for a new bank account with a starting balance.
 * As a customer, I can view the balance of a specific account.
 * As a customer, I can make a withdrawal or deposit to a specific account.
@@ -37,26 +40,39 @@ public class MainFunction {
 
 	public static void main(String[] args) {
 		Scanner scan = new Scanner(System.in);
-		int latch =0;	
-		User currentUser;
-		
+		int latch = 0;
+		User currentUser = null;
+		Menu mainMenu;
+
 		System.out.println("Welcome to Java Bank");
-		
 
-
-			System.out.println("do you have a user account with us?");			
-			System.out.println("Y or N");
+		System.out.println("do you have a user account with us?");
+		System.out.println("Y or N");
+		while (latch == 0) {
 			currentUser = BasicFunctions.hasAccount(scan.nextLine().toUpperCase());
+			if (currentUser == null) {
+				System.out.println("please enter Y or N");
+			} else {
+				latch = 1;
+			}
+		}
+		mainMenu = null;
+		if (currentUser.getUserRole().toUpperCase().equals("EMPLOYEE")) {
+			mainMenu = new EmployeeMenu();
+		} else if (currentUser.getUserRole().toUpperCase().equals("CUSTOMER")) {
+			mainMenu = new CustomerMenu();
+		} else {
 			
+		}
+
+		while (latch == 0) {
+			Menu.displayMenu(mainMenu);
+			int selection = BasicFunctions.getIntInput();
+			mainMenu.makeSelection(selection, currentUser);
 			
-			
-		
-		
-		
-		
-		
-		
+
+		}
+
 	}
-	
-	
+
 }
