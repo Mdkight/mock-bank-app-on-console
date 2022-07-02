@@ -6,7 +6,7 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import com.revature.objects.User;
-import com.revature.utils.UserDataPostgres;
+import com.revature.utils.dao.UserDataPostgres;
 
 public class BasicFunctions {
 	static Scanner scan = new Scanner(System.in);
@@ -114,7 +114,7 @@ public class BasicFunctions {
 			if (password.equals(confirm)) {
 				System.out.println("thank you, we are now creating your user account");
 				newUser = new User(username, password);
-				userPost.createUser(username, password);
+				userPost.createCustomer(username, password);
 				latch = 1;
 
 			} else {
@@ -129,17 +129,20 @@ public class BasicFunctions {
 		int selection = 0;
 		latch = 0;
 		while (latch == 0) {
-			selection = 0;
 			try {
-				System.out.println("please enter your selection");
 				selection = scan.nextInt();
 				latch = 1;
 			} catch (InputMismatchException e) {
 				System.out.println("I'm sorry, you must enter a number");
 				scan.nextLine();
-				selection = 0;
+			}
+			if(selection==0) {
+				System.out.println("I'm sorry, 0 is not valid");
+				scan.nextLine();
+				latch =0;
 			}
 		}
+		
 		return selection;
 	}
 

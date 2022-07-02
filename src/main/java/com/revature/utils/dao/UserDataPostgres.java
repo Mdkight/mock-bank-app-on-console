@@ -1,15 +1,15 @@
-package com.revature.utils;
+package com.revature.utils.dao;
 
 import java.sql.*;
 
-import com.revature.menus.Menu;
 import com.revature.objects.User;
+import com.revature.utils.ConnectionUtils;
 
-public class UserDataPostgres implements UserDataInterface {
+public class UserDataPostgres  {
 	
 	Connection conn;
 
-	@Override
+
 	public User getUser(String username) {
 		User currentUser= new User();
 		try {
@@ -31,8 +31,8 @@ public class UserDataPostgres implements UserDataInterface {
 		return currentUser;
 	}
 
-	@Override
-	public void createUser(String username, String password) {
+
+	public void createCustomer(String username, String password) {
 		
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
@@ -47,7 +47,7 @@ public class UserDataPostgres implements UserDataInterface {
 
 	}
 
-	@Override
+
 	public void deleteUser(int userId) {
 		
 		try {
@@ -62,7 +62,7 @@ public class UserDataPostgres implements UserDataInterface {
 
 	}
 
-	@Override
+
 	public ResultSet getAllUsernames() {
 		ResultSet rs =null;
 		try {
@@ -77,7 +77,7 @@ public class UserDataPostgres implements UserDataInterface {
 		return rs;
 	}
 
-	@Override
+
 	public ResultSet getTransactions() {
 		ResultSet transactions =null;
 		try {
@@ -105,12 +105,12 @@ public class UserDataPostgres implements UserDataInterface {
 		return transactions;
 	}
 
-	@Override
+
 	public ResultSet getAccounts(int userId) {
 		ResultSet accounts =null;
 		try {
 		conn = ConnectionUtils.getInstance().getConnection();
-		PreparedStatement getAllAccounts = conn.prepareStatement("select * from accounts where user_id=?");
+		PreparedStatement getAllAccounts = conn.prepareStatement("select * from accounts where user_id=? order by pending");
 		getAllAccounts.setInt(1, userId);
 		accounts = getAllAccounts.executeQuery();
 		} catch (SQLException e) {
@@ -120,7 +120,7 @@ public class UserDataPostgres implements UserDataInterface {
 		return accounts;
 	}
 	
-	@Override
+
 	public ResultSet getAccounts(boolean status) {
 		ResultSet accounts =null;
 		try {

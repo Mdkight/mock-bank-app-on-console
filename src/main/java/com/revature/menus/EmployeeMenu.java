@@ -3,15 +3,19 @@ package com.revature.menus;
 import java.util.Scanner;
 
 import com.revature.objects.User;
-import com.revature.utils.UserDataPostgres;
+import com.revature.utils.dao.AccountDataPostgres;
+import com.revature.utils.dao.TransactionDataPostgres;
+import com.revature.utils.dao.UserDataPostgres;
 
 public class EmployeeMenu extends Menu {
 	UserDataPostgres userPost = new UserDataPostgres();
+	AccountDataPostgres acctPost = new AccountDataPostgres();
+	TransactionDataPostgres transPost =new TransactionDataPostgres();
 	Scanner scan = new Scanner(System.in);
 	static int latch=0;
 	
 	public EmployeeMenu() {
-		super("View pending accounts", "view accounts by customer", "view customers name and Id", "see all transactions", "Exit");
+		super("View pending accounts", "view accounts by customer", "see all transactions", "Exit");
 	}
 
 	@Override
@@ -20,19 +24,12 @@ public class EmployeeMenu extends Menu {
 		switch(entry){
 		case 1:
 			userPost.getAccounts(false);
-			
+			acctPost.approveAccounts();
 		case 2:
-			int user=userSelector();
-			if(user==0) {
-				latch=0;
-			}else {
-			userPost.getAccounts(user);
-			}
+			userPost.getAccounts(userSelector());
 		case 3:
-			
+			transPost.seeAllAccounts();
 		case 4:
-			
-		case 5:
 			System.out.println("Goodbye");
 			System.exit(0);
 		default:

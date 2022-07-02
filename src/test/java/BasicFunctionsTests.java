@@ -8,7 +8,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import com.revature.main.BasicFunctions;
 import com.revature.objects.User;
-import com.revature.utils.UserDataPostgres;
+import com.revature.utils.dao.UserDataPostgres;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BasicFunctionsTests {
