@@ -3,11 +3,13 @@ package com.revature.menus;
 import com.revature.main.BasicFunctions;
 import com.revature.objects.User;
 import com.revature.utils.dao.AccountDataPostgres;
+import com.revature.utils.dao.TransactionDataPostgres;
 import com.revature.utils.dao.UserDataPostgres;
 
 public class CustomerMenu extends Menu {
 	UserDataPostgres userPost = new UserDataPostgres();
 	AccountDataPostgres acctPost = new AccountDataPostgres();
+	TransactionDataPostgres transPost =new TransactionDataPostgres();
 
 	public CustomerMenu() {
 		super("Check account balances'", "Make a withdrawl", "Make a deposit", "Transfer between your accounts", "Transfer to another customer", "Apply for a new account","See my transactions", "Exit");
@@ -18,7 +20,7 @@ public class CustomerMenu extends Menu {
 		
 		switch(entry){
 		case 1:
-			userPost.getAccounts(currentUser.getUserId());
+			acctPost.getAccount(currentUser.getUserId());
 		case 2:
 			System.out.println("From which account would you like to withdraw?");
 			acctPost.withdraw(acctPost.getAccount(BasicFunctions.getIntInput()));
@@ -32,7 +34,7 @@ public class CustomerMenu extends Menu {
 		case 6:
 			acctPost.newAccount(currentUser);
 		case 7:
-			userPost.display(userPost.getTransactions(currentUser.getUserId()));
+			transPost.display(transPost.getTransactions(currentUser.getUserId()));
 		case 8:	
 			System.out.println("Goodbye");
 			System.exit(0);

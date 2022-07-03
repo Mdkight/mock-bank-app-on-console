@@ -17,7 +17,7 @@ import com.revature.objects.User;
 
 ## User Stories
 
-* As a user, I can login.
+* X As a user, I can login.
 * As a user, I can register for a customer account.
 * 
 * * As the system, I reject invalid transactions.
@@ -46,7 +46,7 @@ public class MainFunction {
 
 		System.out.println("Welcome to Java Bank");
 
-		System.out.println("do you have a user account with us?");
+		System.out.println("do you have a customer account with us?");
 		System.out.println("Y or N");
 		while (latch == 0) {
 			currentUser = BasicFunctions.hasAccount(scan.nextLine().toUpperCase());

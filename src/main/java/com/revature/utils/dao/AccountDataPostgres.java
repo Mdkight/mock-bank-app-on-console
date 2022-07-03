@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import com.revature.main.BasicFunctions;
 import com.revature.objects.Account;
@@ -71,6 +72,21 @@ public class AccountDataPostgres {
 		}
 		return currentAccount;
 	}
+	
+	public void getAccount() {
+		
+			try {
+				conn=ConnectionUtils.getInstance().getConnection();
+				Statement getAccounts=conn.createStatement();
+				ResultSet rs =getAccounts.executeQuery("select * from accounts where approved is null");
+				display(rs);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		
+	}
 
 	public void deposit(Account act) {
 		System.out.println("how much would you like to deposit?");
@@ -107,7 +123,7 @@ public class AccountDataPostgres {
 		int initialDeposit=BasicFunctions.getIntInput();
 		try {
 			conn=ConnectionUtils.getInstance().getConnection();
-			PreparedStatement newAccount = conn.prepareStatement("insert into accounts (owner_id, approved,current_balance) values (?,false,?");
+			PreparedStatement newAccount = conn.prepareStatement("insert into accounts (owner_id, approved, current_balance) values (?,null,?");
 			newAccount.setInt(1, currentUser.getUserId());
 			newAccount.setInt(2, initialDeposit);
 			newAccount.execute();
@@ -120,7 +136,22 @@ public class AccountDataPostgres {
 	}
 
 	public void approveAccounts() {
-		// TODO Auto-generated method stub
+		System.out.println("Please enter the account number you wish to approve");
+		System.out.println("or press B to go back");
+		int acctNum = BasicFunctions.getIntInput();
+		if (acctNum==0) {
+			
+		}else {
+			try {
+				conn=ConnectionUtils.getInstance().getConnection();
+				PreparedStatement approveAccount = conn.prepareStatement("update accounts set approved=true where account_id=?");
+				approveAccount.setInt(1, acctNum);
+				approveAccount.executeUpdate();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}
 		
 	}
 	

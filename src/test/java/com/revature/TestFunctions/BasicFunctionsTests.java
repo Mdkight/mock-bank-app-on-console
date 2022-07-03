@@ -1,3 +1,4 @@
+package com.revature.TestFunctions;
 import java.util.Scanner;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,6 +30,11 @@ public class BasicFunctionsTests {
 		System.out.println("enter the same number");
 		int compare=scan.nextInt();
 		Assertions.assertEquals(result,compare);
+	}
+	
+	@Test
+	public void testLogin() {
+		user = BasicFunctions.userLogin();
 	}
 	
 	

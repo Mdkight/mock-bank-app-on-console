@@ -23,12 +23,12 @@ public class EmployeeMenu extends Menu {
 
 		switch(entry){
 		case 1:
-			userPost.getAccounts(false);
+			acctPost.getAccount();
 			acctPost.approveAccounts();
 		case 2:
-			userPost.getAccounts(userSelector());
+			acctPost.getAccount(userSelector());
 		case 3:
-			transPost.seeAllAccounts();
+			transPost.seeAllTransactions();
 		case 4:
 			System.out.println("Goodbye");
 			System.exit(0);

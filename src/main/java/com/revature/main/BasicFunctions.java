@@ -125,7 +125,7 @@ public class BasicFunctions {
 		return newUser;
 	}
 
-	public static int getIntInput() {
+	public static int getIntInput() { //TODO add B as back option
 		int selection = 0;
 		latch = 0;
 		while (latch == 0) {
@@ -133,7 +133,7 @@ public class BasicFunctions {
 				selection = scan.nextInt();
 				latch = 1;
 			} catch (InputMismatchException e) {
-				System.out.println("I'm sorry, you must enter a number");
+				System.out.println("I'm sorry, you must enter a number greater than 0");
 				scan.nextLine();
 			}
 			if(selection==0) {
