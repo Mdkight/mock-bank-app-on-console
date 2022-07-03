@@ -20,7 +20,7 @@ import com.revature.objects.User;
 * X As a user, I can login.
 * X As a user, I can register for a customer account.
 * 
-* * As the system, I reject invalid transactions.
+* X As the system, I reject invalid transactions.
     * Ex:
         * A withdrawal that would result in a negative balance.
         * A deposit or withdrawal of negative money.
@@ -32,7 +32,7 @@ import com.revature.objects.User;
 * As a customer, I can accept a money transfer from another account.
 *  
 *X As an employee, I can approve or reject an account.
-* As an employee, I can view a customer's bank accounts.
+*X As an employee, I can view a customer's bank accounts.
 *X As an employee, I can view a log of all transactions.
 */
 

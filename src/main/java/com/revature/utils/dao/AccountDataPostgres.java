@@ -46,31 +46,35 @@ public class AccountDataPostgres {
 
 	private int checkWithdrawBalance(Account act) {
 		latch = 0;
-		while (latch == 0)
+		int withdraw=0;
+		int difference =0;
+		while (latch == 0) {
 			System.out.println("how much would you like to withdraw?");
-		int withdraw = BasicFunctions.getIntInput();
-		int difference = act.getCurrentBalance() - withdraw;
-		if (difference < 0) {
-			System.out.println("I'm sorry, you do not have that much in the account");
-
-		} else {
-			latch = 1;
+			withdraw = BasicFunctions.getIntInput();
+			difference = act.getCurrentBalance() - withdraw;			
+			if (withdraw < 0 || difference<0) {
+				System.out.println("I'm sorry, that is not a valid entry");
+			} else {
+				latch = 1;
+			}
 		}
 		return difference;
 	}
 
 	private int checkTransferBalance(Account act) {
 		latch = 0;
-		while (latch == 0)
-			System.out.println("your current balance is: " + act.getCurrentBalance());
-		System.out.println("how much would you like to transfer?");
-		int transfer = BasicFunctions.getIntInput();
-		int difference = act.getCurrentBalance() - transfer;
-		if (difference < 0) {
-			System.out.println("I'm sorry, you do not have that much in the account");
+		int transfer = 0;
+		System.out.println("your current balance is: " + act.getCurrentBalance());
+		while (latch == 0) {
+			System.out.println("how much would you like to transfer?");
+			transfer = BasicFunctions.getIntInput();
+			int difference = act.getCurrentBalance() - transfer;
+			if (difference < 0 || transfer < 0) {
+				System.out.println("I'm sorry, that is not a valid amount");
 
-		} else {
-			latch = 1;
+			} else {
+				latch = 1;
+			}
 		}
 		return transfer;
 	}
@@ -109,9 +113,18 @@ public class AccountDataPostgres {
 	}
 
 	public void deposit(Account act) {
-		System.out.println("how much would you like to deposit?");
-		int deposit = BasicFunctions.getIntInput();
-		int sum = act.getCurrentBalance() + deposit;
+		latch = 0;
+		int sum = 0;
+		while (latch == 0) {
+			System.out.println("how much would you like to deposit?");
+			int deposit = BasicFunctions.getIntInput();
+			if (deposit >= 0) {
+				sum = act.getCurrentBalance() + deposit;
+				latch = 1;
+			} else {
+				System.out.println("I'm sorry, you cannot deposit a negative amount");
+			}
+		}
 		int newBalance = sum;
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
@@ -142,17 +155,18 @@ public class AccountDataPostgres {
 				int transferAmount = checkTransferBalance(getAccount(BasicFunctions.getIntInput()));
 				System.out.println("please enter the User Id number of the customer to whom you want to transfer: ");
 				int destinationAccount = getFirstUserAccount(BasicFunctions.getIntInput());
-				transfer(fromAccount,destinationAccount,transferAmount);
+				transfer(fromAccount, destinationAccount, transferAmount);
 
-			}
-				
 			}
 
 		}
+
+	}
+
 	private void transfer(int fromAccount, int destinationAccount, int transferAmount) {
 		try {
-			conn =ConnectionUtils.getInstance().getConnection();
-			CallableStatement transfer =conn.prepareCall("transfer(?,?,?)");
+			conn = ConnectionUtils.getInstance().getConnection();
+			CallableStatement transfer = conn.prepareCall("transfer(?,?,?)");
 			transfer.setInt(1, fromAccount);
 			transfer.setInt(2, destinationAccount);
 			transfer.setInt(3, transferAmount);
@@ -160,26 +174,24 @@ public class AccountDataPostgres {
 		} catch (SQLException e) {
 			System.out.println("transfer failed, please try again later");
 		}
-		
+
 	}
 
 	private int getFirstUserAccount(int intInput) {
 		ResultSet rs = getMyAccounts(intInput);
 		int[] allAccounts = new int[5];
-		int i=0;
+		int i = 0;
 		try {
-			while(rs.next() && i<allAccounts.length) {
-				allAccounts[i]=rs.getInt("account_id");
+			while (rs.next() && i < allAccounts.length) {
+				allAccounts[i] = rs.getInt("account_id");
 				i++;
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return allAccounts[0];
-		
+
 	}
-	
 
 	private boolean isItMyAccount(int account, User user) {
 		boolean isIt;
@@ -267,11 +279,11 @@ public class AccountDataPostgres {
 	}
 
 	public ResultSet getMyAccounts(int userId) {
-		ResultSet rs=null;
+		ResultSet rs = null;
 
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
-			PreparedStatement getAccount = conn.prepareStatement("Select * from accounts where owner_id=?");
+			PreparedStatement getAccount = conn.prepareStatement("Select (account_id, current_balance) from accounts where owner_id=? and approved=true");
 			getAccount.setInt(1, userId);
 			rs = getAccount.executeQuery();
 
@@ -281,7 +293,5 @@ public class AccountDataPostgres {
 		}
 		return rs;
 	}
-		
-	}
 
-
+}

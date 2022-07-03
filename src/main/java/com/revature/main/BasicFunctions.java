@@ -12,8 +12,7 @@ public class BasicFunctions {
 	static Scanner scan = new Scanner(System.in);
 	static int latch;
 	static UserDataPostgres userPost = new UserDataPostgres();
-	
-	
+
 	public static User hasAccount(String answer) {
 		User currentUser = null;
 		if (answer.equals("Y") || answer.equals("YES")) {
@@ -23,8 +22,8 @@ public class BasicFunctions {
 			System.out.println("Would you like one?");
 			System.out.println("Y or N");
 			currentUser = createUserAccount(scan.nextLine().toUpperCase());
-		}else {
-			currentUser=null;
+		} else {
+			currentUser = null;
 		}
 		return currentUser;
 	}
@@ -124,25 +123,26 @@ public class BasicFunctions {
 		}
 		return newUser;
 	}
-
-	public static int getIntInput() { //TODO add B as back option
+	
+	public static int getIntInput() {
 		int selection = 0;
 		latch = 0;
 		while (latch == 0) {
-			try {
-				selection = scan.nextInt();
-				latch = 1;
-			} catch (InputMismatchException e) {
-				System.out.println("I'm sorry, you must enter a number greater than 0");
-				scan.nextLine();
-			}
-			if(selection==0) {
-				System.out.println("I'm sorry, 0 is not valid");
-				scan.nextLine();
-				latch =0;
+			String input = scan.nextLine();
+			if (input.equals("b") || input.equals("B")) {
+				selection = 0;
+			} else if (input.equals("0")) {
+				System.out.println("I'm sorry, 0 is not a valid entry");
+			}else {
+				try {
+				selection =Integer.parseInt(input);
+				latch=1;
+				}catch (NumberFormatException e) {
+					System.out.println("that is not a valid integer entry");
+					latch =0;
+				}
 			}
 		}
-		
 		return selection;
 	}
 
