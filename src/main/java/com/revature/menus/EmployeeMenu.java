@@ -28,7 +28,7 @@ public class EmployeeMenu extends Menu {
 		case 2:
 			acctPost.getAccount(userSelector());
 		case 3:
-			transPost.seeAllTransactions();
+			transPost.getTransactions();
 		case 4:
 			System.out.println("Goodbye");
 			System.exit(0);

@@ -10,11 +10,6 @@ import com.revature.utils.ConnectionUtils;
 public class TransactionDataPostgres {
 	
 	Connection conn;
-
-	public void seeAllTransactions() {
-		// TODO Auto-generated method stub
-		
-	}
 	
 	public ResultSet getTransactions() {
 		ResultSet transactions =null;

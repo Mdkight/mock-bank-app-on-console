@@ -26,6 +26,7 @@ public class BasicFunctionsTests {
 
 	@Test
 	public void getIntInputTest() {
+		System.out.println("enter a number");
 		int result=BasicFunctions.getIntInput();
 		System.out.println("enter the same number");
 		int compare=scan.nextInt();
@@ -35,6 +36,7 @@ public class BasicFunctionsTests {
 	@Test
 	public void testLogin() {
 		user = BasicFunctions.userLogin();
+		Assertions.assertEquals(user.getUsername(), "username");
 	}
 	
 	
