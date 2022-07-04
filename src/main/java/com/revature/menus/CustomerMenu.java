@@ -12,7 +12,7 @@ public class CustomerMenu extends Menu {
 	TransactionDataPostgres transPost =new TransactionDataPostgres();
 
 	public CustomerMenu() {
-		super("Check account balances'", "see balance of single account", "Make a withdrawl", "Make a deposit", "Transfer to another customer", "Apply for a new account", "See my transactions", "Exit");
+		super("Check account balances'", "see balance of single account", "Make a withdrawl", "Make a deposit", "Transfer to another customer", "Apply for a new account", "accept pending transfers", "See my transactions", "Exit");
 	}
 
 	@Override
@@ -35,10 +35,14 @@ public class CustomerMenu extends Menu {
 		case 6:
 			acctPost.newAccount(currentUser);
 		case 7:
+			transPost.display(transPost.seePendingTransactions(currentUser));
+			transPost.selectPending();
+		case 8:
 			transPost.display(transPost.getTransactions(currentUser.getUserId()));
-		case 8:	
+		case 9:	
 			System.out.println("Goodbye");
 			System.exit(0);
+		default:
 		}
 		
 	}

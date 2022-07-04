@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.revature.main.BasicFunctions;
 import com.revature.objects.Account;
@@ -13,7 +15,7 @@ import com.revature.objects.User;
 import com.revature.utils.ConnectionUtils;
 
 public class AccountDataPostgres {
-
+	TransactionDataPostgres transPost = new TransactionDataPostgres();
 	Connection conn;
 	static int latch = 0;
 
@@ -28,7 +30,8 @@ public class AccountDataPostgres {
 	}
 
 	public void withdraw(Account act) {
-		int newBalance = checkWithdrawBalance(act);
+		int withdrawAmount = checkWithdrawBalance(act);
+		int newBalance = act.getCurrentBalance() - withdrawAmount;
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
 			PreparedStatement withdraw = conn
@@ -38,6 +41,7 @@ public class AccountDataPostgres {
 			act.setCurrentBalance(newBalance);
 			System.out
 					.println("your new balance for Account: " + act.getAccountId() + " is " + act.getCurrentBalance());
+			transPost.logTransaction("withdrawal", withdrawAmount, act.getAccountId(), act.getOwnerId());
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -46,19 +50,19 @@ public class AccountDataPostgres {
 
 	private int checkWithdrawBalance(Account act) {
 		latch = 0;
-		int withdraw=0;
-		int difference =0;
+		int withdraw = 0;
+		int difference = 0;
 		while (latch == 0) {
 			System.out.println("how much would you like to withdraw?");
 			withdraw = BasicFunctions.getIntInput();
-			difference = act.getCurrentBalance() - withdraw;			
-			if (withdraw < 0 || difference<0) {
+			difference = act.getCurrentBalance() - withdraw;
+			if (withdraw < 0 || difference < 0) {
 				System.out.println("I'm sorry, that is not a valid entry");
 			} else {
 				latch = 1;
 			}
 		}
-		return difference;
+		return withdraw;
 	}
 
 	private int checkTransferBalance(Account act) {
@@ -115,11 +119,12 @@ public class AccountDataPostgres {
 	public void deposit(Account act) {
 		latch = 0;
 		int sum = 0;
+		int depositAmount = 0;
 		while (latch == 0) {
 			System.out.println("how much would you like to deposit?");
-			int deposit = BasicFunctions.getIntInput();
-			if (deposit >= 0) {
-				sum = act.getCurrentBalance() + deposit;
+			depositAmount = BasicFunctions.getIntInput();
+			if (depositAmount >= 0) {
+				sum = act.getCurrentBalance() + depositAmount;
 				latch = 1;
 			} else {
 				System.out.println("I'm sorry, you cannot deposit a negative amount");
@@ -128,22 +133,28 @@ public class AccountDataPostgres {
 		int newBalance = sum;
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
-			PreparedStatement withdraw = conn
+			PreparedStatement deposit = conn
 					.prepareStatement("update accounts set current_balance=? where account_id=?");
-			withdraw.setInt(1, newBalance);
-			withdraw.setInt(2, act.getAccountId());
+			conn.setAutoCommit(false);
+			deposit.setInt(1, newBalance);
+			deposit.setInt(2, act.getAccountId());
+			deposit.execute();
 			act.setCurrentBalance(newBalance);
 			System.out
 					.println("your new balance for Account: " + act.getAccountId() + " is " + act.getCurrentBalance());
+			transPost.logTransaction("deposit", depositAmount, act.getAccountId(), act.getOwnerId());
 		} catch (SQLException e) {
-			//
-			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+
 		}
 
 	}
 
 	public void otherTransfer(User fromUser) {
-		Account toUser = new Account();
 		System.out.println("enter the account number you would like to transfer from: ");
 		System.out.println("or press B to return to the previous screen");
 		int fromAccount = BasicFunctions.getIntInput();
@@ -151,11 +162,13 @@ public class AccountDataPostgres {
 
 		} else {
 			if (isItMyAccount(fromAccount, fromUser)) {
-
-				int transferAmount = checkTransferBalance(getAccount(BasicFunctions.getIntInput()));
+				Account transferFromAccount = getAccount(BasicFunctions.getIntInput());
+				int transferAmount = checkTransferBalance(transferFromAccount);
 				System.out.println("please enter the User Id number of the customer to whom you want to transfer: ");
-				int destinationAccount = getFirstUserAccount(BasicFunctions.getIntInput());
-				transfer(fromAccount, destinationAccount, transferAmount);
+				int destinationUser = BasicFunctions.getIntInput();
+
+				Account destinationAccount = getFirstUserAccount(destinationUser);
+				transfer(transferFromAccount, destinationAccount, transferAmount);
 
 			}
 
@@ -163,33 +176,48 @@ public class AccountDataPostgres {
 
 	}
 
-	private void transfer(int fromAccount, int destinationAccount, int transferAmount) {
+	private void transfer(Account fromAccount, Account destinationAccount, int transferAmount) {
+		int fromAccountNumber = fromAccount.getAccountId();
+		int destinationAccountNumber = destinationAccount.getAccountId();
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
-			CallableStatement transfer = conn.prepareCall("transfer(?,?,?)");
-			transfer.setInt(1, fromAccount);
-			transfer.setInt(2, destinationAccount);
-			transfer.setInt(3, transferAmount);
-			transfer.execute();
+			PreparedStatement transferFrom = conn
+					.prepareStatement("update accounts set current_balance=? where acount_id=?");
+			PreparedStatement createTransferFrom = conn.prepareStatement(
+					"insert into transfers (origin_account_id, destination_account_id, user_id, transfer_type, amount) values origin_account_id=?, destination_account_id=?, user_id=?, transfer_type=Transfer From, amount=?");
+
+			transferFrom.setInt(1, fromAccount.getCurrentBalance() - transferAmount);
+			transferFrom.setInt(2, fromAccount.getAccountId());
+			createTransferFrom.setInt(1, fromAccountNumber);
+			createTransferFrom.setInt(2, destinationAccountNumber);
+			createTransferFrom.setInt(3, fromAccount.getOwnerId());
+			createTransferFrom.setInt(4, transferAmount);
+			transferFrom.execute();
+			createTransferFrom.execute();
+			transPost.logTransaction("Transfer from", transferAmount, fromAccountNumber, fromAccount.getOwnerId());
+			transPost.logTransaction("Transfer to", transferAmount, destinationAccountNumber,
+					destinationAccount.getOwnerId());
 		} catch (SQLException e) {
 			System.out.println("transfer failed, please try again later");
 		}
 
 	}
 
-	private int getFirstUserAccount(int intInput) {
+	private Account getFirstUserAccount(int intInput) {
 		ResultSet rs = getMyAccounts(intInput);
-		int[] allAccounts = new int[5];
-		int i = 0;
+		List<Account> allAccounts = new ArrayList<Account>();
+		Account toAdd = new Account();
 		try {
-			while (rs.next() && i < allAccounts.length) {
-				allAccounts[i] = rs.getInt("account_id");
-				i++;
+			while (rs.next()) {
+				toAdd.setAccountId(rs.getInt(1));
+				toAdd.setOwnerId(rs.getInt(2));
+				toAdd.setCurrentBalance(4);
+				allAccounts.add(toAdd);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return allAccounts[0];
+		return allAccounts.get(0);
 
 	}
 
@@ -283,7 +311,8 @@ public class AccountDataPostgres {
 
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
-			PreparedStatement getAccount = conn.prepareStatement("Select (account_id, current_balance) from accounts where owner_id=? and approved=true");
+			PreparedStatement getAccount = conn.prepareStatement(
+					"Select (account_id, current_balance) from accounts where owner_id=? and approved=true");
 			getAccount.setInt(1, userId);
 			rs = getAccount.executeQuery();
 

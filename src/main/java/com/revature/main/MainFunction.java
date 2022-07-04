@@ -26,7 +26,7 @@ import com.revature.objects.User;
         * A deposit or withdrawal of negative money.
 * 
 *X As a customer, I can apply for a new bank account with a starting balance.
-* As a customer, I can view the balance of a specific account.
+*X As a customer, I can view the balance of a specific account.
 *X As a customer, I can make a withdrawal or deposit to a specific account.
 *X As a customer, I can post a money transfer to another account.
 * As a customer, I can accept a money transfer from another account.
