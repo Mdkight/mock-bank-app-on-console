@@ -37,11 +37,8 @@ public abstract class Menu {
 	public abstract void makeSelection(int entry, User currentUser);
 
 	public int userSelector() {
-		int userId = 0;
 			System.out.println("Please enter the user number associated with the customer");
-			userId = BasicFunctions.getIntInput();
-		
-
+			int userId = BasicFunctions.getIntInput();
 		return userId;
 	}
 

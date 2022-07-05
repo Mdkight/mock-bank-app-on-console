@@ -15,69 +15,91 @@ public class TransactionDataPostgres {
 
 	Connection conn;
 
-	public ResultSet getTransactions() {
+	public void getTransactions() {
 		ResultSet transactions = null;
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
 			PreparedStatement getAllTransactions = conn.prepareStatement("select * from transactions");
 			transactions = getAllTransactions.executeQuery();
+			display(transactions);
 		} catch (SQLException e) {
 
 			e.printStackTrace();
 		}
-		return transactions;
 	}
 
-	public ResultSet getTransactions(int userId) {
+	public void getTransactions(int userId) {
 		ResultSet transactions = null;
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
 			PreparedStatement getTransactions = conn.prepareStatement("select * from transactions where user_id=?");
 			getTransactions.setInt(1, userId);
 			transactions = getTransactions.executeQuery();
+			display(transactions);
 		} catch (SQLException e) {
 
 			e.printStackTrace();
 		}
-		return transactions;
+	
 	}
 
 	public void display(ResultSet res) {
 		try {
 			while (res.next()) {
-				System.out.println(res);
+				System.out.println();
+				System.out.print("Transaction number: " + res.getInt(1));
+				System.out.print("Account number: " + res.getInt(2));
+				System.out.print("Transaction type: " + res.getString(4));
+				System.out.print("Amount: " + res.getInt(5));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public ResultSet seePendingTransactions(User currentUser) {
+	public void seePendingTransfers(User currentUser) {
 		ResultSet rs = null;
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
-			PreparedStatement seePending = conn.prepareStatement("select * from transfers where user_id=?");
-			seePending.setInt(1, currentUser.getUserId());
+			PreparedStatement seePending = conn.prepareStatement("Select transfers.transfer_id, transfers.amount  from accounts inner join transfers on transfers.destination_account_id = accounts.account_id where accounts.owner_id=?");
+			seePending.setInt(1,currentUser.getUserId());
 			rs = seePending.executeQuery();
+			displayTransfer(rs);
 		} catch (SQLException e) {
 
 			e.printStackTrace();
 		}
-		return rs;
+		
 
 	}
 
-	public void logTransaction(String transType, int amount, int accountId, int ownerId) {
+	private void displayTransfer(ResultSet res) {
+		try {
+			while (res.next()) {
+				System.out.println();
+				System.out.print("Transfer number: " + res.getInt(1));
+				System.out.print("Amount: " + res.getInt(2));
+				System.out.println();
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	public void logTransaction(String transType, int amount, int accountId, int userId) {
 		try {
 
 			conn = ConnectionUtils.getInstance().getConnection();
 			PreparedStatement logTransaction = conn.prepareStatement(
-					"insert into transactions (transaction_type, amount, account_id, user_id) values transaction_type=?, amount=?, account_id=?, owner_id=?");
-			logTransaction.setString(1, transType);
-			logTransaction.setInt(2, amount);
-			logTransaction.setInt(3, accountId);
-			logTransaction.setInt(4, ownerId);
-			logTransaction.execute();
+					"insert into transactions (account_id, user_id, transaction_type, amount) values (?,?,?,?)");
+//		"insert into transactions (account_id, user_id, transaction_type, amount) values (account_id=?, user_id=?, transaction_type=?, amount=?)");
+			logTransaction.setInt(1, accountId);
+			logTransaction.setInt(2, userId);			
+			logTransaction.setString(3, transType);
+			logTransaction.setInt(4, amount);
+			logTransaction.executeUpdate();
 		} catch (SQLException e) {
 
 			e.printStackTrace();
@@ -113,7 +135,7 @@ public class TransactionDataPostgres {
 			currentTransfer.setDestinationId(rs.getInt(4));
 			currentTransfer.setTransferType(rs.getString(5));
 			currentTransfer.setAmount(rs.getInt(6));
-			
+			return currentTransfer;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -124,7 +146,6 @@ public class TransactionDataPostgres {
 
 	private void approveTransfer(Transfer transfer) {
 		AccountDataPostgres acctPost = new AccountDataPostgres();
-		Account fromAccount= acctPost.getAccount(transfer.getOriginId());
 		Account destinationAccount= acctPost.getAccount(transfer.getDestinationId());
 
 		try {

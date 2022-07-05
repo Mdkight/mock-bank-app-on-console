@@ -1,5 +1,6 @@
 package com.revature.main;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 import com.revature.menus.CustomerMenu;
@@ -29,7 +30,7 @@ import com.revature.objects.User;
 *X As a customer, I can view the balance of a specific account.
 *X As a customer, I can make a withdrawal or deposit to a specific account.
 *X As a customer, I can post a money transfer to another account.
-* As a customer, I can accept a money transfer from another account.
+*X As a customer, I can accept a money transfer from another account.
 *  
 *X As an employee, I can approve or reject an account.
 *X As an employee, I can view a customer's bank accounts.
@@ -46,23 +47,19 @@ public class MainFunction {
 
 		System.out.println("Welcome to Java Bank");
 
-		System.out.println("do you have a customer account with us?");
+		System.out.println("do you have an account with us?");
 		System.out.println("Y or N");
-		while (latch == 0) {
-			currentUser = BasicFunctions.hasAccount(scan.nextLine().toUpperCase());
-			if (currentUser == null) {
-				System.out.println("please enter Y or N");
-			} else {
-				latch = 1;
-			}
-		}
+
+		try {
+		currentUser = BasicFunctions.hasAccount(scan.nextLine().toUpperCase());
+			
 		mainMenu = null;
 		if (currentUser.getUserRole().toUpperCase().equals("EMPLOYEE")) {
 			mainMenu = new EmployeeMenu();
 		} else if (currentUser.getUserRole().toUpperCase().equals("CUSTOMER")) {
 			mainMenu = new CustomerMenu();
 		} else {
-			
+			System.out.println("something is wrong");
 		}
 
 		while (latch == 0) {
@@ -70,7 +67,9 @@ public class MainFunction {
 			int selection = BasicFunctions.getIntInput();
 			mainMenu.makeSelection(selection, currentUser);
 			
-
+		}	
+		}catch(SQLException e) {
+			e.printStackTrace();
 		}
 
 	}

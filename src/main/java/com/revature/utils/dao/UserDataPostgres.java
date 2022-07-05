@@ -36,9 +36,10 @@ public class UserDataPostgres  {
 		
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
-			PreparedStatement createUser = conn.prepareStatement("Insert into users (user_role, username, password) values (CUSTOMER,?,?)");
-			createUser.setString(1, username);
-			createUser.setString(2, password);
+			PreparedStatement createUser = conn.prepareStatement("Insert into users (user_role, username, password) values (?,?,?)");
+			createUser.setString(1, "CUSTOMER");
+			createUser.setString(2, username);
+			createUser.setString(3, password);
 			createUser.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -63,29 +64,30 @@ public class UserDataPostgres  {
 	}
 
 
-	public ResultSet getAllUsernames() {
-		ResultSet rs =null;
-		try {
-			conn = ConnectionUtils.getInstance().getConnection();
-			PreparedStatement getAllUsernames = conn.prepareStatement("Select username from users");
-			rs = getAllUsernames.executeQuery();
-		} catch (SQLException e) {
-			// 
-			e.printStackTrace();
-		}
-		
-		return rs;
-	}
-	
-	public void display(ResultSet res) {
-		try {
-			while(res.next()) {
-				System.out.println(res);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
+//	public ResultSet getAllUsernames() {
+//		ResultSet rs=null;
+//		try {
+//			conn = ConnectionUtils.getInstance().getConnection();
+////			PreparedStatement getAllUsernames = conn.prepareStatement("Select username from users");
+//			Statement getAllUsernames = conn.createStatement();
+//			rs = getAllUsernames.executeQuery("Select * from users");
+//		} catch (SQLException e) {
+//			// 
+//			e.printStackTrace();
+//		}
+//		
+//		return rs;
+//	}
+//	
+//	public void display(ResultSet res) {
+//		try {
+//			while(res.next()) {
+//				System.out.println(res);
+//			}
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 
 }

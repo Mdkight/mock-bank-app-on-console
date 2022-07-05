@@ -1,4 +1,5 @@
 package com.revature.TestFunctions;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 import org.junit.jupiter.api.Assertions;
@@ -34,7 +35,7 @@ public class BasicFunctionsTests {
 	}
 	
 	@Test
-	public void testLogin() {
+	public void testLogin() throws SQLException {
 		user = BasicFunctions.userLogin();
 		Assertions.assertEquals(user.getUsername(), "username");
 	}

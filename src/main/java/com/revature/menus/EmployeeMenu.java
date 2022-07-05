@@ -1,7 +1,9 @@
 package com.revature.menus;
 
+import java.sql.ResultSet;
 import java.util.Scanner;
 
+import com.revature.objects.Account;
 import com.revature.objects.User;
 import com.revature.utils.dao.AccountDataPostgres;
 import com.revature.utils.dao.TransactionDataPostgres;
@@ -25,15 +27,19 @@ public class EmployeeMenu extends Menu {
 		case 1:
 			acctPost.getAccount();
 			acctPost.approveAccounts();
+			break;
 		case 2:
-			acctPost.getAccount(userSelector());
+			acctPost.getAllAccounts(userSelector());
+			break;
 		case 3:
 			transPost.getTransactions();
+			System.out.println();
+			break;
 		case 4:
 			System.out.println("Goodbye");
 			System.exit(0);
 		default:
-			
+			break;
 		}
 
 		

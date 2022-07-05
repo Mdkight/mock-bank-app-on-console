@@ -22,7 +22,11 @@ public class AccountDataPostgres {
 	public void display(ResultSet res) {
 		try {
 			while (res.next()) {
-				System.out.println(res);
+				System.out.println();
+				System.out.print("account num:" + res.getInt("account_id"));
+				System.out.print(" Customer ID:" + res.getInt("owner_id"));
+				System.out.print(" account balance:" + res.getInt("current_balance"));
+				System.out.println();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -59,7 +63,7 @@ public class AccountDataPostgres {
 			if (withdraw < 0 || difference < 0) {
 				System.out.println("I'm sorry, that is not a valid entry");
 			} else {
-				latch = 1;
+				return withdraw;
 			}
 		}
 		return withdraw;
@@ -77,10 +81,23 @@ public class AccountDataPostgres {
 				System.out.println("I'm sorry, that is not a valid amount");
 
 			} else {
-				latch = 1;
+				return transfer;
 			}
 		}
 		return transfer;
+	}
+
+	public void getAllAccounts(int ownId) {
+		try {
+			conn = ConnectionUtils.getInstance().getConnection();
+			PreparedStatement getAccount = conn.prepareStatement("Select * from accounts where owner_id=?");
+			getAccount.setInt(1, ownId);
+			ResultSet rs = getAccount.executeQuery();
+			display(rs);
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
 	}
 
 	public Account getAccount(int actId) {
@@ -91,10 +108,13 @@ public class AccountDataPostgres {
 			PreparedStatement getAccount = conn.prepareStatement("Select * from accounts where account_id=?");
 			getAccount.setInt(1, actId);
 			ResultSet rs = getAccount.executeQuery();
-			currentAccount.setAccountId(actId);
-			currentAccount.setOwnerId(rs.getInt(2));
-			currentAccount.setApproved(rs.getBoolean(3));
-			currentAccount.setCurrentBalance(rs.getInt(4));
+			while (rs.next()) {
+				currentAccount.setAccountId(actId);
+				currentAccount.setOwnerId(rs.getInt(2));
+				currentAccount.setApproved(rs.getBoolean(3));
+				currentAccount.setCurrentBalance(rs.getInt(4));
+				return currentAccount;
+			}
 		} catch (SQLException e) {
 
 			e.printStackTrace();
@@ -107,7 +127,7 @@ public class AccountDataPostgres {
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
 			Statement getAccounts = conn.createStatement();
-			ResultSet rs = getAccounts.executeQuery("select * from accounts where approved is null");
+			ResultSet rs = getAccounts.executeQuery("select * from accounts where approved=false");
 			display(rs);
 
 		} catch (SQLException e) {
@@ -159,10 +179,10 @@ public class AccountDataPostgres {
 		System.out.println("or press B to return to the previous screen");
 		int fromAccount = BasicFunctions.getIntInput();
 		if (fromAccount == 0) {
-
+			System.out.println("whoops");
 		} else {
 			if (isItMyAccount(fromAccount, fromUser)) {
-				Account transferFromAccount = getAccount(BasicFunctions.getIntInput());
+				Account transferFromAccount = getAccount(fromAccount);
 				int transferAmount = checkTransferBalance(transferFromAccount);
 				System.out.println("please enter the User Id number of the customer to whom you want to transfer: ");
 				int destinationUser = BasicFunctions.getIntInput();
@@ -182,15 +202,16 @@ public class AccountDataPostgres {
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
 			PreparedStatement transferFrom = conn
-					.prepareStatement("update accounts set current_balance=? where acount_id=?");
+					.prepareStatement("update accounts set current_balance=? where account_id=?");
 			PreparedStatement createTransferFrom = conn.prepareStatement(
-					"insert into transfers (origin_account_id, destination_account_id, user_id, transfer_type, amount) values origin_account_id=?, destination_account_id=?, user_id=?, transfer_type=Transfer From, amount=?");
+					"insert into transfers (origin_account_id, destination_account_id, transfer_type, amount) values (?,?,?,?)");
 
 			transferFrom.setInt(1, fromAccount.getCurrentBalance() - transferAmount);
 			transferFrom.setInt(2, fromAccount.getAccountId());
 			createTransferFrom.setInt(1, fromAccountNumber);
 			createTransferFrom.setInt(2, destinationAccountNumber);
-			createTransferFrom.setInt(3, fromAccount.getOwnerId());
+//			createTransferFrom.setInt(3, fromAccount.getOwnerId());
+			createTransferFrom.setString(3, "Transfer From");
 			createTransferFrom.setInt(4, transferAmount);
 			transferFrom.execute();
 			createTransferFrom.execute();
@@ -199,20 +220,27 @@ public class AccountDataPostgres {
 					destinationAccount.getOwnerId());
 		} catch (SQLException e) {
 			System.out.println("transfer failed, please try again later");
+			e.printStackTrace();
 		}
 
 	}
 
-	private Account getFirstUserAccount(int intInput) {
-		ResultSet rs = getMyAccounts(intInput);
+	public Account getFirstUserAccount(int intInput) {
 		List<Account> allAccounts = new ArrayList<Account>();
-		Account toAdd = new Account();
 		try {
+			ResultSet rs;
+			conn = ConnectionUtils.getInstance().getConnection();
+			PreparedStatement getAccount = conn.prepareStatement(
+					"Select owner_id, account_id, current_balance from accounts where owner_id=?");
+			getAccount.setInt(1, intInput);
+			rs = getAccount.executeQuery();
+			Account toAdd = new Account();
 			while (rs.next()) {
-				toAdd.setAccountId(rs.getInt(1));
-				toAdd.setOwnerId(rs.getInt(2));
-				toAdd.setCurrentBalance(4);
+				toAdd.setOwnerId(rs.getInt(1));				
+				toAdd.setAccountId(rs.getInt(2));
+				toAdd.setCurrentBalance(3);
 				allAccounts.add(toAdd);
+				return allAccounts.get(0);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -230,10 +258,10 @@ public class AccountDataPostgres {
 			getAccounts.setInt(1, user.getUserId());
 			ResultSet rs = getAccounts.executeQuery();
 			while (rs.next()) {
-				isIt = account == rs.getInt("account_id");
-				if (isIt) {
-					return isIt;
-				} else {
+				if(account == rs.getInt("account_id")) {
+				isIt = true ;
+				return isIt;
+				}else {
 					System.out.println("that account Id does not match any of your accounts");
 
 				}
@@ -252,7 +280,7 @@ public class AccountDataPostgres {
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
 			PreparedStatement newAccount = conn
-					.prepareStatement("insert into accounts (owner_id, approved, current_balance) values (?,null,?");
+					.prepareStatement("insert into accounts (owner_id, approved, current_balance) values (?,false,?)");
 			newAccount.setInt(1, currentUser.getUserId());
 			newAccount.setInt(2, initialDeposit);
 			newAccount.execute();
@@ -306,21 +334,21 @@ public class AccountDataPostgres {
 
 	}
 
-	public ResultSet getMyAccounts(int userId) {
+	public void getMyAccounts(int userId) {
 		ResultSet rs = null;
 
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
 			PreparedStatement getAccount = conn.prepareStatement(
-					"Select (account_id, current_balance) from accounts where owner_id=? and approved=true");
+					"Select account_id, owner_id, current_balance from accounts where owner_id=? and approved=true");
 			getAccount.setInt(1, userId);
 			rs = getAccount.executeQuery();
+			display(rs);
 
 		} catch (SQLException e) {
 
 			e.printStackTrace();
 		}
-		return rs;
 	}
 
 }
