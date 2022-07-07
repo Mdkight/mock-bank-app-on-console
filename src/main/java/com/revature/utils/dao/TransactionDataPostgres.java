@@ -48,9 +48,9 @@ public class TransactionDataPostgres {
 			while (res.next()) {
 				System.out.println();
 				System.out.print("Transaction number: " + res.getInt(1));
-				System.out.print("Account number: " + res.getInt(2));
-				System.out.print("Transaction type: " + res.getString(4));
-				System.out.print("Amount: " + res.getInt(5));
+				System.out.print(" Account number: " + res.getInt(2));
+				System.out.print(" Transaction type: " + res.getString(4));
+				System.out.print(" Amount: " + res.getInt(5));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -109,14 +109,9 @@ public class TransactionDataPostgres {
 
 	public void selectPending() {
 		System.out.println("please select the transfer you wish to accept");
-		System.out.println("press B to go back");
 		int transfer = BasicFunctions.getIntInput();
-		if (transfer == 0) {
-
-		} else {
-
-			approveTransfer(getTransfer(transfer));
-		}
+		approveTransfer(getTransfer(transfer));
+	
 
 	}
 
@@ -129,13 +124,14 @@ public class TransactionDataPostgres {
 			PreparedStatement getTransfer = conn.prepareStatement("select * from transfers where transfer_id=?");
 			getTransfer.setInt(1, transfer);
 			rs = getTransfer.executeQuery();
+			while(rs.next()) {
 			currentTransfer.setTransferId(rs.getInt(1));
-			currentTransfer.setTransactionNumber(rs.getInt(2));
-			currentTransfer.setOriginId(rs.getInt(3));
-			currentTransfer.setDestinationId(rs.getInt(4));
-			currentTransfer.setTransferType(rs.getString(5));
-			currentTransfer.setAmount(rs.getInt(6));
+			currentTransfer.setOriginId(rs.getInt(2));
+			currentTransfer.setDestinationId(rs.getInt(3));
+			currentTransfer.setTransferType(rs.getString(4));
+			currentTransfer.setAmount(rs.getInt(5));
 			return currentTransfer;
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -146,12 +142,13 @@ public class TransactionDataPostgres {
 
 	private void approveTransfer(Transfer transfer) {
 		AccountDataPostgres acctPost = new AccountDataPostgres();
-		Account destinationAccount= acctPost.getAccount(transfer.getDestinationId());
+		Account destinationAccount=null;
 
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
-			PreparedStatement transferIn = conn.prepareStatement("update accounts set current_balance=? where acount_id=?");
-			PreparedStatement removePending =conn.prepareStatement("delete * from transfers where transfer_id=?");
+			destinationAccount= acctPost.getAccount(transfer.getDestinationId());
+			PreparedStatement transferIn = conn.prepareStatement("update accounts set current_balance=? where account_id=?");
+			PreparedStatement removePending =conn.prepareStatement("delete from transfers where transfer_id=?");
 			transferIn.setInt(1, destinationAccount.getCurrentBalance()+transfer.getAmount());
 			transferIn.setInt(2, destinationAccount.getAccountId());
 			removePending.setInt(1, transfer.getTransferId());
@@ -160,6 +157,7 @@ public class TransactionDataPostgres {
 	
 		} catch (SQLException e) {
 			System.out.println("transfer failed, please try again later");
+			e.printStackTrace();
 		}
 		
 	}
