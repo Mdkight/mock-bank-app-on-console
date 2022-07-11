@@ -250,7 +250,7 @@ public class AccountDataPostgres {
 	}
 
 	private boolean isItMyAccount(int account, User user) {
-		boolean isIt;
+		boolean isMyAccount;
 
 		try {
 			conn = ConnectionUtils.getInstance().getConnection();
@@ -259,8 +259,8 @@ public class AccountDataPostgres {
 			ResultSet rs = getAccounts.executeQuery();
 			while (rs.next()) {
 				if(account == rs.getInt("account_id")) {
-				isIt = true ;
-				return isIt;
+				isMyAccount = true ;
+				return isMyAccount;
 				}else {
 					System.out.println("that account Id does not match any of your accounts");
 
